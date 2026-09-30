@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Petualangan Budaya & Sejarah Lokal Sorong</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        papua: {
+                            gold: '#f59e0b',
+                            emerald: '#10b981',
+                            teal: '#14b8a6',
+                            dark: '#020617',
+                            card: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        .glow-gold {
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.3);
+        }
+
+        .glow-emerald {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .quiz-opt-btn {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .quiz-opt-btn:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.01);
+            border-color: #f59e0b;
+            background-color: rgba(245, 158, 11, 0.15);
+        }
+
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-float {
+            animation: floatAnim 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col justify-between relative overflow-hidden">
+
+    <!-- Canvas Dynamic Background Particles -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Header / Navigasi Top Bar -->
+    <header class="relative z-20 w-full bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-xl">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-amber-500 p-0.5 shadow-lg animate-float">
+                <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center font-cinzel font-black text-amber-400 text-sm">
+                    MOI
+                </div>
+            </div>
+            <div>
+                <h1 class="text-xs sm:text-sm font-cinzel font-extrabold text-amber-300 tracking-wider">JELAJAH SEJARAH & BUDAYA SORONG</h1>
+                <p class="text-[10px] text-emerald-400 font-semibold uppercase tracking-widest">Edisi Edutainment Terpadu • Realtime Cloud</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Sound Toggle Button -->
+            <button id="btn-toggle-sound" onclick="SoundEffects.toggleSound()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 text-sm flex items-center justify-center transition">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+            
+            <!-- Tombol Dashboard Guru / Server Sync -->
+            <button onclick="Game.openTeacherPINModal()" class="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 text-xs font-bold flex items-center gap-2 transition shadow-lg">
+                <i class="fa-solid fa-server text-emerald-400"></i>
+                <span class="hidden sm:inline">Dashboard Server Guru</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="relative z-10 flex-1 w-full flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+        
+        <!-- Screen 1: Registration Form (Identitas Siswa) -->
+        <div id="screen-welcome" class="max-w-md w-full glass-card p-6 sm:p-8 rounded-3xl border border-amber-500/30 text-center glow-gold my-auto relative">
+            <div class="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-500 to-emerald-500 text-slate-950 text-3xl flex items-center justify-center mx-auto mb-4 shadow-xl">
+                <i class="fa-solid fa-compass"></i>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-cinzel font-black text-amber-300 mb-1">PETUALANGAN MALAMOI</h2>
+            <p class="text-xs text-slate-300 mb-6">Masukkan data dirimu untuk memulai misi penjelajahan!</p>
+
+            <form onsubmit="Game.startAdventure(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nama</label>
+                    <input type="text" id="input-student-name" required placeholder="Nama" class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-800 text-amber-300 font-bold text-sm focus:outline-none focus:border-amber-400 transition">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Asal Sekolah</label>
+                    <input type="text" id="input-student-school" required placeholder="Asal Sekolah" class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-800 text-amber-300 font-bold text-sm focus:outline-none focus:border-amber-400 transition">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Pilih Avatar Petualang</label>
+                    <div class="grid grid-cols-4 gap-2" id="avatar-selector">
+                        <!-- Avatars populated via JS -->
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-teal-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 font-black text-xs uppercase tracking-widest shadow-2xl transition transform hover:-translate-y-0.5 mt-2 flex items-center justify-center gap-2">
+                    MULAI PETUALANGAN <i class="fa-solid fa-play"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Screen 2: Game Quiz Active Screen -->
+        <div id="screen-quiz" class="hidden max-w-3xl w-full glass-card p-4 sm:p-8 rounded-3xl border border-emerald-500/30 shadow-2xl relative glow-emerald my-auto">
+            
+            <!-- HUD Stats Inside Game -->
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/80">
+                <div class="flex items-center gap-3">
+                    <div id="hud-avatar-icon" class="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-700 text-xl flex items-center justify-center">
+                        🏹
+                    </div>
+                    <div>
+                        <div id="hud-student-info" class="text-xs font-bold text-amber-300">Nama • Asal Sekolah</div>
+                        <span id="quiz-topic-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-bold uppercase tracking-wider">
+                            TOPIC BADGE
+                        </span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 text-xs font-black">
+                    <div class="text-right">
+                        <span class="block text-[10px] text-slate-400 uppercase">Combo Streak</span>
+                        <span id="val-streak" class="text-amber-400"><i class="fa-solid fa-fire mr-1"></i>0x</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="block text-[10px] text-slate-400 uppercase">Total Skor</span>
+                        <span id="val-score" class="text-emerald-400"><i class="fa-solid fa-trophy mr-1"></i>0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden mb-5 border border-slate-800">
+                <div id="quiz-progress-bar" class="bg-gradient-to-r from-amber-500 to-emerald-400 h-full w-0 transition-all duration-300"></div>
+            </div>
+
+            <!-- Question Number & Title -->
+            <div class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1" id="quiz-num-text">Soal 1 dari 18</div>
+            <h2 id="quiz-question" class="text-sm sm:text-base font-bold text-slate-100 leading-relaxed mb-5 min-h-[50px]">
+                Pertanyaan kuis akan dimuat di sini...
+            </h2>
+
+            <!-- Options Grid -->
+            <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5"></div>
+
+            <!-- Feedback / Explanation Panel -->
+            <div id="quiz-feedback" class="hidden bg-slate-950/90 p-4 rounded-2xl border border-slate-800 mb-4 transition">
+                <div id="quiz-feedback-title" class="text-xs sm:text-sm font-black mb-1 flex items-center gap-2"></div>
+                <p id="quiz-explanation" class="text-xs text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <!-- Next Button -->
+            <div class="flex justify-end">
+                <button id="btn-next-question" onclick="Game.nextQuestion()" class="hidden px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-xl transition items-center gap-2">
+                    SOAL BERIKUTNYA <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 3: Victory & Submission Status -->
+        <div id="screen-summary" class="hidden max-w-lg w-full glass-card p-6 sm:p-8 rounded-3xl border border-amber-500/40 shadow-2xl text-center my-auto">
+            <div class="w-20 h-20 rounded-full bg-amber-500/20 border-2 border-amber-400 text-amber-400 text-4xl flex items-center justify-center mx-auto mb-4 animate-bounce">
+                👑
+            </div>
+            <h2 class="text-2xl font-cinzel font-black text-amber-300 mb-1">MISI SELESAI!</h2>
+            <p class="text-xs text-slate-300 mb-5">Kamu telah menuntaskan seluruh tantangan sejarah & budaya lokal Sorong.</p>
+
+            <div class="grid grid-cols-3 gap-2 bg-slate-950/80 p-4 rounded-2xl border border-slate-800 mb-5 text-center">
+                <div>
+                    <span class="block text-[10px] text-slate-400 uppercase font-bold">Skor Akhir</span>
+                    <span id="end-score" class="text-xl font-black text-amber-400">0</span>
+                </div>
+                <div>
+                    <span class="block text-[10px] text-slate-400 uppercase font-bold">Benar</span>
+                    <span id="end-correct" class="text-xl font-black text-emerald-400">0/18</span>
+                </div>
+                <div>
+                    <span class="block text-[10px] text-slate-400 uppercase font-bold">Akurasi</span>
+                    <span id="end-accuracy" class="text-xl font-black text-teal-400">0%</span>
+                </div>
+            </div>
+
+            <!-- Status Cloud Sync -->
+            <div id="cloud-sync-status" class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-amber-300 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-spinner fa-spin"></i> Mengirimkan nilai & jawaban ke Server Guru...
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Login Mode Guru (PIN Input) -->
+    <div id="modal-teacher-login" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="max-w-sm w-full glass-card p-6 rounded-3xl border border-amber-500/50 shadow-2xl relative text-center">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-400 text-2xl flex items-center justify-center mx-auto mb-3">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h3 class="text-base font-cinzel font-bold text-amber-300 mb-1">VERIFIKASI GURU</h3>
+            <p class="text-xs text-slate-300 mb-4">Masukkan Kode PIN Guru untuk mengakses server data nilai seluruh siswa.</p>
+            
+            <input type="password" id="teacher-pin-input" placeholder="Masukkan PIN" class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-800 text-center text-amber-300 font-black text-xl mb-4 focus:outline-none focus:border-amber-400">
+            
+            <div class="flex gap-2">
+                <button onclick="Game.closeTeacherLogin()" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300">BATAL</button>
+                <button onclick="Game.verifyTeacherPIN()" class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase">MASUK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Server Dashboard Guru (Realtime Synchronized Scores) -->
+    <div id="modal-teacher-dashboard" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-lg flex items-center justify-center p-3 sm:p-6 hidden">
+        <div class="max-w-5xl w-full glass-card p-5 sm:p-7 rounded-3xl border border-amber-500/50 shadow-2xl relative flex flex-col max-h-[92vh]">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-cinzel font-bold text-amber-300">SERVER REKAP HASIL SISWA</h3>
+                        <p class="text-[10px] text-emerald-400 font-semibold">Terkoneksi Cloud • Realtime Sync</p>
+                    </div>
+                </div>
+                <button onclick="Game.closeTeacherDashboard()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Top Dashboard Stats -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                <div class="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-center">
+                    <span class="block text-[10px] text-slate-400 uppercase font-bold">Total Siswa Subsit</span>
+                    <span id="dash-total-students" class="text-lg font-black text-amber-400">0</span>
+                </div>
+                <div class="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-center">
+                    <span class="block text-[10px] text-slate-400 uppercase font-bold">Rata-rata Nilai</span>
+                    <span id="dash-avg-score" class="text-lg font-black text-emerald-400">0</span>
+                </div>
+                <div class="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-center">
+                    <span class="block text-[10px] text-slate-400 uppercase font-bold">Nilai Tertinggi</span>
+                    <span id="dash-max-score" class="text-lg font-black text-teal-400">0</span>
+                </div>
+                <div class="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-center">
+                    <span class="block text-[10px] text-slate-400 uppercase font-bold">Status Server</span>
+                    <span class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-circle text-[8px] animate-pulse mr-1"></i> Aktif</span>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs in Teacher Dashboard -->
+            <div class="flex gap-2 mb-3 border-b border-slate-800 pb-2">
+                <button id="tab-btn-students" onclick="Game.switchTeacherTab('students')" class="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs">
+                    <i class="fa-solid fa-users mr-1"></i> Daftar Nilai Siswa
+                </button>
+                <button id="tab-btn-answers" onclick="Game.switchTeacherTab('answers')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs hover:bg-slate-700">
+                    <i class="fa-solid fa-key mr-1"></i> Kunci Jawaban & Analisis Soal
+                </button>
+            </div>
+
+            <!-- Tab Content 1: List of Students -->
+            <div id="tab-content-students" class="flex-1 overflow-y-auto pr-1">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900 text-amber-400 uppercase font-bold text-[10px] border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Siswa & Avatar</th>
+                                <th class="p-3">Asal Sekolah</th>
+                                <th class="p-3">Skor</th>
+                                <th class="p-3">Benar</th>
+                                <th class="p-3">Akurasi</th>
+                                <th class="p-3">Waktu Submit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacher-students-table" class="divide-y divide-slate-800/60">
+                            <!-- Populated dynamically via Firestore -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Content 2: Answer Keys & Item Difficulty -->
+            <div id="tab-content-answers" class="hidden flex-1 overflow-y-auto pr-1 space-y-3">
+                <div id="teacher-answer-keys-list" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal Dialog (Replacing native alert) -->
+    <div id="modal-alert" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="max-w-xs w-full glass-card p-5 rounded-2xl border border-amber-500/40 text-center">
+            <div id="alert-icon" class="text-3xl mb-2 text-amber-400"><i class="fa-solid fa-circle-info"></i></div>
+            <h4 id="alert-title" class="text-sm font-bold text-slate-100 mb-1">Informasi</h4>
+            <p id="alert-msg" class="text-xs text-slate-300 mb-4 leading-relaxed"></p>
+            <button onclick="Game.closeAlert()" class="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase">
+                MENGERTI
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration & Initialization
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sorong-edutainment-master';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyDummyKeyForAppTesting12345",
+            authDomain: "demo-app.firebaseapp.com",
+            projectId: "demo-app",
+            storageBucket: "demo-app.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:demo"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const res = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = res.user;
+                } else {
+                    const res = await signInAnonymously(auth);
+                    currentUser = res.user;
+                }
+            } catch (err) {
+                console.warn("Auth initialization fallback:", err);
+            }
+        }
+        initAuth();
+
+        // Canvas Particles Background Effect
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = Math.random() * -0.5 - 0.2;
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.opacity = Math.random() * 0.5 + 0.2;
+                this.color = Math.random() > 0.5 ? '#f59e0b' : '#10b981';
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.opacity;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 40; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // Web Audio Synthesizer (Sound Effects without external audio files)
+        window.SoundEffects = {
+            muted: false,
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            toggleSound() {
+                this.muted = !this.muted;
+                const btn = document.getElementById('btn-toggle-sound');
+                btn.innerHTML = this.muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+            },
+            playCorrect() {
+                if (this.muted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.15); // E5
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            },
+            playWrong() {
+                if (this.muted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.setValueAtTime(180, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            }
+        };
+
+        // Master Questions Bank
+        const MASTER_QUESTIONS = [
+            {
+                topic: "BAB 1 • Suku Moi",
+                question: "Dalam kosmologi Suku Moi di Tanah Malamoi (Sorong), hutan yang dikenal dengan sebutan 'Tuk' dipandang sebagai...",
+                options: [
+                    "A. Komoditas ekonomi yang bebas diperjualbelikan",
+                    "B. Lahan kosong yang harus dibakar untuk pembangunan",
+                    "C. Ibu yang memberi kehidupan dan wajib dijaga kelestariannya",
+                    "D. Milik pribadi pimpinan adat semata"
+                ],
+                correct: 2,
+                explanation: "Filosofi Suku Moi memandang hutan sebagai 'Ibu' (Tuk) yang melahirkan sumber kehidupan pangan dan air."
+            },
+            {
+                topic: "BAB 1 • Suku Moi",
+                question: "Lembaga adat terdepan dalam menjaga hak ulayat dan batas wilayah hutan adat Suku Moi adalah...",
+                options: [
+                    "A. Dewan Adat Suku Moi & Musyawarah Tete Adat",
+                    "B. Saudagar dagang luar negeri",
+                    "C. Perusahaan swasta perkayuan",
+                    "D. Nahkoda kapal internasional"
+                ],
+                correct: 0,
+                explanation: "Dewan Adat Suku Moi bertindak sebagai pemegang amanah sakral pelindung tanah ulayat."
+            },
+            {
+                topic: "BAB 1 • Suku Moi",
+                question: "Pemanfaatan rawa sagu di Muara Sele oleh masyarakat Moi secara ekologis berfungsi untuk...",
+                options: [
+                    "A. Tanaman impor buatan modern",
+                    "B. Bahan utama pembuatan perhiasan emas",
+                    "C. Lahan kering tempat pemukiman padat",
+                    "D. Sumber karbohidrat utama sekaligus penahan alami erosi dan banjir"
+                ],
+                correct: 3,
+                explanation: "Dusun sagu rawa menjaga pasokan karbohidrat lokal sekaligus menjadi penyerap air alami."
+            },
+            {
+                topic: "BAB 2 • Hukum Sasi",
+                question: "Tujuan utama diterapkannya Hukum Tradisional Sasi di wilayah laut Sorong dan Raja Ampat adalah...",
+                options: [
+                    "A. Melarang warga mengambil ikan selamanya",
+                    "B. Memberikan waktu regenerasi alami bagi biota laut agar populasi pulih",
+                    "C. Menjual biota laut ke negara asing",
+                    "D. Menimbun ikan agar harga menjadi sangat tinggi"
+                ],
+                correct: 1,
+                explanation: "Sasi adalah konservasi tradisional yaitu penutupan kawasan laut sementara untuk membiarkan teripang, lobster, dan ikan berkembang biak."
+            },
+            {
+                topic: "BAB 2 • Hukum Sasi",
+                question: "Ritual adat penanda berakhirnya masa larangan Sasi dan dimulainya pemanenan bersama dinamakan...",
+                options: [
+                    "A. Tutup Sasi",
+                    "B. Potong Sasi",
+                    "C. Buka Sasi",
+                    "D. Buang Sasi"
+                ],
+                correct: 2,
+                explanation: "Ritual 'Buka Sasi' dilaksanakan ketika biota laut dipastikan matang dan cukup jumlahnya untuk dipanen arif."
+            },
+            {
+                topic: "BAB 2 • Hukum Sasi",
+                question: "Sanksi adat utama bagi pelanggar yang sengaja mencuri hasil laut saat masa Sasi berlaku adalah...",
+                options: [
+                    "A. Denda adat berat (seperti Kain Timur) dan hukuman moral sosial",
+                    "B. Mendapatkan hadiah perahu baru",
+                    "C. Diangkat menjadi pimpinan desa",
+                    "D. Bebas tanpa konsekuensi"
+                ],
+                correct: 0,
+                explanation: "Sanksi Sasi sangat tegas berupa denda adat serta rasa malu sosial demi menegakkan integritas komunitas."
+            },
+            {
+                topic: "BAB 3 • Perdagangan Biak-Tidore",
+                question: "Komoditas berharga dari wilayah Papua yang diperdagangkan dalam Jalur Rempah dengan Kesultanan Tidore adalah...",
+                options: [
+                    "A. Kain sutra eropa dan keramik",
+                    "B. Biji gandum dan kurma",
+                    "C. Minyak mentah modern",
+                    "D. Pala pedalaman, Teripang laut, dan Bulu Cendrawasih"
+                ],
+                correct: 3,
+                explanation: "Pala, hasil laut, dan bulu cendrawasih merupakan barang barter bernilai tinggi di jaringan perdagangan maritim Nusantara Timur."
+            },
+            {
+                topic: "BAB 3 • Perdagangan Biak-Tidore",
+                question: "Peran strategis pelaut Suku Biak dalam jaringan perdagangan sejarah di Papua adalah...",
+                options: [
+                    "A. Menutup seluruh jalur pelayaran perahu lokal",
+                    "B. Menjadi perintis pelayaran dan perantara barter antarpulau",
+                    "C. Menghentikan perdagangan rempah secara sepihak",
+                    "D. Menghancurkan perahu dagang asing"
+                ],
+                correct: 1,
+                explanation: "Pelaut Biak terkenal dengan keahlian navigasi samudra yang menghubungkan daratan Papua dengan Maluku Utara."
+            },
+            {
+                topic: "BAB 3 • Perdagangan Biak-Tidore",
+                question: "Pengetahuan tradisional yang digunakan pelaut Biak untuk melintasi laut malam hari tanpa alat modern adalah...",
+                options: [
+                    "A. Mesin satelit otomatis",
+                    "B. Aplikasi kompas telepon pintar",
+                    "C. Navigasi rasi bintang, arah angin, dan gelombang arus laut",
+                    "D. Penerangan lampu sorot listrik"
+                ],
+                correct: 2,
+                explanation: "Kearifan maritim leluhur mengandalkan posisi rasi bintang dan arah mata angin untuk memandu pelayaran."
+            },
+            {
+                topic: "BAB 4 • Kain Timur Pusaka",
+                question: "Kedudukan Kain Timur Pusaka dalam struktur sosial-budaya Suku Moi di Sorong adalah sebagai...",
+                options: [
+                    "A. Pakaian santai harian tanpa nilai sakral",
+                    "B. Alat tukar sakral, mahar mas kawin, dan penyelesai denda adat",
+                    "C. Bahan kain industri sintesis modern",
+                    "D. Kain lap pembersih rumah"
+                ],
+                correct: 1,
+                explanation: "Kain Timur adalah harta pusaka berharga yang menentukan kehormatan adat, mas kawin, dan perdamaian perselisihan."
+            },
+            {
+                topic: "BAB 4 • Kain Timur Pusaka",
+                question: "Secara sejarah, Kain Timur dapat tersebar luas ke wilayah Kepala Burung Papua melalui...",
+                options: [
+                    "A. Pabrik tekstil lokal di pedalaman",
+                    "B. Ditemukan di dalam gua batu",
+                    "C. Pembelian lewat toko online modern",
+                    "D. Jaringan pertukaran barter maritim pedagang Tidore & pelaut Biak"
+                ],
+                correct: 3,
+                explanation: "Kain Timur dibawa oleh perantara pedagang maritim dari Kepulauan Maluku sebagai barang pertukaran nilai tinggi."
+            },
+            {
+                topic: "BAB 4 • Kain Timur Pusaka",
+                question: "Upaya terbaik generasi muda dalam melestarikan warisan pengetahuan Kain Timur adalah...",
+                options: [
+                    "A. Menjual seluruh kain tua ke kolektor asing",
+                    "B. Lupa pada asal usul tradisi lokal",
+                    "C. Merekam kisah perajin, mendokumentasikan motif, dan menjadikannya bahan pembelajaran interaktif",
+                    "D. Mengganti semua Kain Timur dengan plastik"
+                ],
+                correct: 2,
+                explanation: "Dokumentasi digital dan integrasi ke media edukasi edutainment memastikan warisan pengetahuan tetap hidup."
+            },
+            {
+                topic: "BAB 5 • Pelestarian Budaya",
+                question: "Prinsip 'Kladus' dalam budaya Moi mengajarkan bahwa peran manusia terhadap alam sekitar adalah sebagai...",
+                options: [
+                    "A. Penjaga (steward) yang bertanggung jawab memelihara keseimbangan",
+                    "B. Eksploitator yang merusak hutan",
+                    "C. Penonton yang tidak peduli lingkungan",
+                    "D. Pemilik modal yang membakar rawa"
+                ],
+                correct: 0,
+                explanation: "Kladus menegaskan kewajiban moral manusia untuk menjaga alam agar tetap harmonis bagi generasi penerus."
+            },
+            {
+                topic: "BAB 5 • Pelestarian Budaya",
+                question: "Penggabungan antara kearifan lokal Sasi dengan sains kelautan modern menghasilkan...",
+                options: [
+                    "A. Kerusakan terumbu karang yang parah",
+                    "B. Hilangnya pasokan ikan secara drastis",
+                    "C. Sistem konservasi laut berkelanjutan berbasis komunitas yang diakui dunia",
+                    "D. Konflik antarnelayan pesisir"
+                ],
+                correct: 2,
+                explanation: "Sinergi tradisi lokal dan ilmu kelautan menciptakan model perlindungan lingkungan hidup yang sangat efektif."
+            },
+            {
+                topic: "BAB 5 • Pelestarian Budaya",
+                question: "Mengapa pelajar di Sorong perlu mempelajari sejarah lokal seperti Tanah Malamoi dan Jalur Rempah?",
+                options: [
+                    "A. Sekadar untuk menghabiskan jam pelajaran",
+                    "B. Membangun rasa bangga, identitas budaya, serta karakter cinta tanah air sejak dini",
+                    "C. Agar bisa pindah ke luar pulau",
+                    "D. Untuk dijual sebagai konten komersial"
+                ],
+                correct: 1,
+                explanation: "Pemahaman sejarah lokal menumbuhkan jati diri dan kepedulian terhadap kemajuan daerah sendiri."
+            },
+            {
+                topic: "BAB 5 • Evaluasi Terpadu",
+                question: "Bagaimana hubungan pasokan Sagu di rawa Sorong dengan kelancaran pelayaran maritim zaman dulu?",
+                options: [
+                    "A. Sagu menjadi perbekalan pangan (logistik) tahan lama bagi para pelaut samudera",
+                    "B. Sagu dipakai sebagai bahan pembuat layar kapal",
+                    "C. Sagu menghalangi jalan kapal",
+                    "D. Sagu tidak berguna untuk pelayaran"
+                ],
+                correct: 0,
+                explanation: "Olahan sagu merupakan perbekalan vital yang tidak mudah rusak selama ekspedisi laut melintasi samudra."
+            },
+            {
+                topic: "BAB 5 • Evaluasi Terpadu",
+                question: "Sikap di lingkungan sekolah yang mencerminkan pemaknaan prinsip Hukum Sasi adalah...",
+                options: [
+                    "A. Merusak fasilitas kelas saat guru tidak ada",
+                    "B. Membuang sampah plastik di kebun sekolah",
+                    "C. Mengambil barang teman tanpa izin",
+                    "D. Menjaga dan merawat sarana bersama secara disiplin agar dapat digunakan lama"
+                ],
+                correct: 3,
+                explanation: "Nilai utama Sasi adalah kedisiplinan dan menjaga ketertiban sarana bersama secara bertanggung jawab."
+            },
+            {
+                topic: "BAB 5 • Evaluasi Terpadu",
+                question: "Pesan moral paling berharga dari edutainment 'Petualangan Malamoi & Tidore Realm' adalah...",
+                options: [
+                    "A. Mengejar keuntungan ekonomi tanpa memedulikan alam",
+                    "B. Keseimbangan harmonis antara kemakmuran, penghormatan tradisi adat, dan kelestarian ekosistem",
+                    "C. Menolak perkembangan zaman modern",
+                    "D. Melupakan sejarah masa lalu"
+                ],
+                correct: 1,
+                explanation: "Kunci keberlanjutan masa depan adalah menjaga harmoni antara pembangunan modern dan warisan luhur adat."
+            }
+        ];
+
+        // Avatars List
+        const AVATARS = [
+            { id: 'moi', icon: '🏹', name: 'Penjaga Moi' },
+            { id: 'biak', icon: '⛵', name: 'Pelaut Biak' },
+            { id: 'sasi', icon: '🌊', name: 'Penjaga Sasi' },
+            { id: 'kain', icon: '🎨', name: 'Perajin Kain' }
+        ];
+
+        // Global Game State
+        window.Game = {
+            teacherPIN: "3051",
+            studentName: "",
+            studentSchool: "",
+            selectedAvatar: "🏹",
+            currentIndex: 0,
+            score: 0,
+            streak: 0,
+            studentAnswers: [],
+            allSubmissionsFromCloud: [],
+
+            init() {
+                this.renderAvatarSelector();
+                this.setupCloudListener();
+            },
+
+            renderAvatarSelector() {
+                const container = document.getElementById('avatar-selector');
+                container.innerHTML = '';
+                AVATARS.forEach((av, idx) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `p-2.5 rounded-2xl border text-center transition ${idx === 0 ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-slate-900 border-slate-800 text-slate-400'}`;
+                    btn.onclick = () => {
+                        document.querySelectorAll('#avatar-selector button').forEach(b => {
+                            b.className = 'p-2.5 rounded-2xl bg-slate-900 border border-slate-800 text-slate-400 transition';
+                        });
+                        btn.className = 'p-2.5 rounded-2xl bg-amber-500/20 border border-amber-400 text-amber-300 transition';
+                        this.selectedAvatar = av.icon;
+                    };
+                    btn.innerHTML = `
+                        <div class="text-xl mb-0.5">${av.icon}</div>
+                        <div class="text-[9px] font-bold leading-tight">${av.name}</div>
+                    `;
+                    container.appendChild(btn);
+                });
+            },
+
+            startAdventure(e) {
+                e.preventDefault();
+                const name = document.getElementById('input-student-name').value.trim();
+                const school = document.getElementById('input-student-school').value.trim();
+                if (!name || !school) return;
+
+                this.studentName = name;
+                this.studentSchool = school;
+
+                document.getElementById('screen-welcome').classList.add('hidden');
+                document.getElementById('screen-quiz').classList.remove('hidden');
+
+                document.getElementById('hud-student-info').innerText = `${this.studentName} • ${this.studentSchool}`;
+                document.getElementById('hud-avatar-icon').innerText = this.selectedAvatar;
+
+                this.renderCurrentQuestion();
+            },
+
+            renderCurrentQuestion() {
+                const quiz = MASTER_QUESTIONS[this.currentIndex];
+                
+                document.getElementById('quiz-topic-badge').innerText = quiz.topic;
+                document.getElementById('quiz-num-text').innerText = `Soal ${this.currentIndex + 1} dari ${MASTER_QUESTIONS.length}`;
+                document.getElementById('quiz-question').innerText = quiz.question;
+
+                // Update Progress Bar Width
+                const pct = ((this.currentIndex + 1) / MASTER_QUESTIONS.length) * 100;
+                document.getElementById('quiz-progress-bar').style.width = `${pct}%`;
+
+                const optionsContainer = document.getElementById('quiz-options');
+                optionsContainer.innerHTML = '';
+
+                document.getElementById('quiz-feedback').classList.add('hidden');
+                document.getElementById('btn-next-question').classList.add('hidden');
+
+                const optionLabels = ['A', 'B', 'C', 'D'];
+
+                quiz.options.forEach((optText, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = `quiz-opt-btn w-full p-3.5 rounded-2xl bg-slate-950 hover:bg-amber-500/10 border border-slate-800 text-xs font-semibold text-left text-slate-200 flex items-center gap-3`;
+                    
+                    if (this.studentAnswers[this.currentIndex] !== undefined) {
+                        btn.disabled = true;
+                        if (idx === quiz.correct) {
+                            btn.classList.add('bg-emerald-600/30', 'border-emerald-400', 'text-emerald-200');
+                        } else if (idx === this.studentAnswers[this.currentIndex]) {
+                            btn.classList.add('bg-rose-600/30', 'border-rose-400', 'text-rose-200');
+                        }
+                    } else {
+                        btn.onclick = () => this.selectAnswer(idx);
+                    }
+
+                    btn.innerHTML = `
+                        <span class="w-7 h-7 rounded-xl bg-slate-900 border border-slate-700 text-amber-400 font-extrabold flex items-center justify-center shrink-0 text-xs">
+                            ${optionLabels[idx]}
+                        </span>
+                        <span class="flex-1">${optText}</span>
+                    `;
+                    optionsContainer.appendChild(btn);
+                });
+
+                if (this.studentAnswers[this.currentIndex] !== undefined) {
+                    this.showFeedback(this.studentAnswers[this.currentIndex] === quiz.correct);
+                }
+            },
+
+            selectAnswer(selectedIdx) {
+                const quiz = MASTER_QUESTIONS[this.currentIndex];
+                this.studentAnswers[this.currentIndex] = selectedIdx;
+
+                const isCorrect = (selectedIdx === quiz.correct);
+                if (isCorrect) {
+                    this.streak++;
+                    const bonus = this.streak > 1 ? (this.streak * 10) : 0;
+                    this.score += (100 + bonus);
+                    SoundEffects.playCorrect();
+                } else {
+                    this.streak = 0;
+                    SoundEffects.playWrong();
+                }
+
+                this.renderCurrentQuestion();
+                this.showFeedback(isCorrect);
+                this.updateHUD();
+            },
+
+            showFeedback(isCorrect) {
+                const quiz = MASTER_QUESTIONS[this.currentIndex];
+                const feedbackBox = document.getElementById('quiz-feedback');
+                const feedbackTitle = document.getElementById('quiz-feedback-title');
+                const feedbackExp = document.getElementById('quiz-explanation');
+
+                feedbackBox.classList.remove('hidden');
+
+                if (isCorrect) {
+                    feedbackTitle.className = "text-xs font-black mb-1 flex items-center gap-2 text-emerald-400";
+                    feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-check text-sm"></i> BENAR! ${this.streak > 1 ? `(Combo ${this.streak}x Bonus!)` : ''}`;
+                } else {
+                    feedbackTitle.className = "text-xs font-black mb-1 flex items-center gap-2 text-rose-400";
+                    feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-xmark text-sm"></i> JAWABAN KURANG TEPAT`;
+                }
+
+                feedbackExp.innerText = quiz.explanation;
+
+                const nextBtn = document.getElementById('btn-next-question');
+                nextBtn.classList.remove('hidden');
+                nextBtn.classList.add('flex');
+            },
+
+            nextQuestion() {
+                if (this.currentIndex < MASTER_QUESTIONS.length - 1) {
+                    this.currentIndex++;
+                    this.renderCurrentQuestion();
+                } else {
+                    this.finishGame();
+                }
+            },
+
+            updateHUD() {
+                document.getElementById('val-score').innerText = this.score;
+                document.getElementById('val-streak').innerText = `${this.streak}x`;
+            },
+
+            async finishGame() {
+                document.getElementById('screen-quiz').classList.add('hidden');
+                document.getElementById('screen-summary').classList.remove('hidden');
+
+                let correctCount = 0;
+                this.studentAnswers.forEach((ans, idx) => {
+                    if (ans === MASTER_QUESTIONS[idx].correct) correctCount++;
+                });
+
+                const accuracy = Math.round((correctCount / MASTER_QUESTIONS.length) * 100);
+
+                document.getElementById('end-score').innerText = this.score;
+                document.getElementById('end-correct').innerText = `${correctCount}/${MASTER_QUESTIONS.length}`;
+                document.getElementById('end-accuracy').innerText = `${accuracy}%`;
+
+                await this.submitToCloud(correctCount, accuracy);
+            },
+
+            async submitToCloud(correctCount, accuracy) {
+                const syncBox = document.getElementById('cloud-sync-status');
+                try {
+                    const submissionsCol = collection(db, 'artifacts', appId, 'public', 'data', 'student_submissions');
+                    await addDoc(submissionsCol, {
+                        studentName: this.studentName,
+                        studentSchool: this.studentSchool,
+                        avatar: this.selectedAvatar,
+                        score: this.score,
+                        correctCount: correctCount,
+                        totalQuestions: MASTER_QUESTIONS.length,
+                        accuracy: accuracy,
+                        answers: this.studentAnswers,
+                        submittedAt: new Date().toISOString()
+                    });
+
+                    syncBox.className = "p-3 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-xs text-emerald-300 flex items-center justify-center gap-2";
+                    syncBox.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> Nilai & Jawaban Berhasil Disimpan & Terkirim ke Server Guru!`;
+                } catch (err) {
+                    console.error("Cloud submit error:", err);
+                    syncBox.className = "p-3 rounded-xl bg-amber-500/20 border border-amber-400/40 text-xs text-amber-300 flex items-center justify-center gap-2";
+                    syncBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Terhubung lokal. Jawaban tersimpan di memori perangkat.`;
+                }
+            },
+
+            // Setup Realtime Listener for Teacher Dashboard
+            setupCloudListener() {
+                try {
+                    const submissionsCol = collection(db, 'artifacts', appId, 'public', 'data', 'student_submissions');
+                    onSnapshot(submissionsCol, (snapshot) => {
+                        const docs = [];
+                        snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+                        docs.sort((a, b) => (b.score || 0) - (a.score || 0));
+                        this.allSubmissionsFromCloud = docs;
+                        if (!document.getElementById('modal-teacher-dashboard').classList.contains('hidden')) {
+                            this.renderTeacherDashboard();
+                        }
+                    }, (error) => {
+                        console.warn("Firestore snapshot error:", error);
+                    });
+                } catch (e) {
+                    console.warn("Listener error:", e);
+                }
+            },
+
+            // Teacher Authentication PIN
+            openTeacherPINModal() {
+                document.getElementById('modal-teacher-login').classList.remove('hidden');
+                document.getElementById('teacher-pin-input').focus();
+            },
+
+            closeTeacherLogin() {
+                document.getElementById('modal-teacher-login').classList.add('hidden');
+                document.getElementById('teacher-pin-input').value = '';
+            },
+
+            verifyTeacherPIN() {
+                const input = document.getElementById('teacher-pin-input').value.trim();
+                if (input === this.teacherPIN) {
+                    this.closeTeacherLogin();
+                    this.openTeacherDashboard();
+                } else {
+                    this.showAlert("PIN Salah!", "Kode PIN akses guru tidak valid. Silakan coba lagi.");
+                }
+            },
+
+            openTeacherDashboard() {
+                this.renderTeacherDashboard();
+                document.getElementById('modal-teacher-dashboard').classList.remove('hidden');
+            },
+
+            closeTeacherDashboard() {
+                document.getElementById('modal-teacher-dashboard').classList.add('hidden');
+            },
+
+            switchTeacherTab(tab) {
+                const btnStudents = document.getElementById('tab-btn-students');
+                const btnAnswers = document.getElementById('tab-btn-answers');
+                const tabStudents = document.getElementById('tab-content-students');
+                const tabAnswers = document.getElementById('tab-content-answers');
+
+                if (tab === 'students') {
+                    btnStudents.className = "px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs";
+                    btnAnswers.className = "px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs hover:bg-slate-700";
+                    tabStudents.classList.remove('hidden');
+                    tabAnswers.classList.add('hidden');
+                } else {
+                    btnAnswers.className = "px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs";
+                    btnStudents.className = "px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs hover:bg-slate-700";
+                    tabAnswers.classList.remove('hidden');
+                    tabStudents.classList.add('hidden');
+                }
+            },
+
+            renderTeacherDashboard() {
+                const list = this.allSubmissionsFromCloud;
+                
+                // Dashboard Header Stats
+                const totalStudents = list.length;
+                let avgScore = 0;
+                let maxScore = 0;
+
+                if (totalStudents > 0) {
+                    const sum = list.reduce((acc, curr) => acc + (curr.score || 0), 0);
+                    avgScore = Math.round(sum / totalStudents);
+                    maxScore = Math.max(...list.map(s => s.score || 0));
+                }
+
+                document.getElementById('dash-total-students').innerText = totalStudents;
+                document.getElementById('dash-avg-score').innerText = avgScore;
+                document.getElementById('dash-max-score').innerText = maxScore;
+
+                // Table 1: Students Submissions
+                const tbody = document.getElementById('teacher-students-table');
+                tbody.innerHTML = '';
+
+                if (totalStudents === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 italic">Belum ada data pengerjaan siswa yang masuk ke server.</td></tr>`;
+                } else {
+                    list.forEach((sub) => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-900/60 transition";
+                        const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-';
+                        tr.innerHTML = `
+                            <td class="p-3 flex items-center gap-2 font-bold text-slate-100">
+                                <span class="text-base">${sub.avatar || '🏹'}</span>
+                                ${sub.studentName || 'Anonim'}
+                            </td>
+                            <td class="p-3 text-slate-400 font-semibold">${sub.studentSchool || sub.studentClass || '-'}</td>
+                            <td class="p-3 font-black text-amber-400">${sub.score || 0}</td>
+                            <td class="p-3 font-bold text-emerald-400">${sub.correctCount || 0}/18</td>
+                            <td class="p-3 font-bold text-teal-300">${sub.accuracy || 0}%</td>
+                            <td class="p-3 text-slate-500 text-[10px]">${dateStr}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+
+                // Table 2: Answer Keys & Item Analytics
+                const keysContainer = document.getElementById('teacher-answer-keys-list');
+                keysContainer.innerHTML = '';
+
+                MASTER_QUESTIONS.forEach((q, qIdx) => {
+                    const optionCounts = [0, 0, 0, 0];
+                    list.forEach(s => {
+                        if (s.answers && s.answers[qIdx] !== undefined) {
+                            optionCounts[s.answers[qIdx]]++;
+                        }
+                    });
+
+                    let majorityIdx = 0;
+                    let maxCount = -1;
+                    optionCounts.forEach((cnt, i) => {
+                        if (cnt > maxCount) {
+                            maxCount = cnt;
+                            majorityIdx = i;
+                        }
+                    });
+
+                    const optLabels = ['A', 'B', 'C', 'D'];
+                    const majorityLabel = totalStudents > 0 ? `${optLabels[majorityIdx]} (${maxCount} siswa)` : 'Belum ada data';
+
+                    const card = document.createElement('div');
+                    card.className = "p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-xs space-y-2";
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="text-amber-400 font-bold text-[11px]">${q.topic} • Soal #${qIdx + 1}</span>
+                            <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-emerald-400 text-[10px] font-bold">Kunci: Option ${optLabels[q.correct]}</span>
+                        </div>
+                        <p class="font-semibold text-slate-200">${q.question}</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-900">
+                            <div class="p-2 rounded-xl bg-slate-900/90 text-emerald-300">
+                                <span class="block text-[9px] text-slate-500 uppercase font-bold">Jawaban Benar</span>
+                                ${q.options[q.correct]}
+                            </div>
+                            <div class="p-2 rounded-xl bg-slate-900/90 text-teal-300">
+                                <span class="block text-[9px] text-slate-500 uppercase font-bold">Mayoritas Dijawab Siswa</span>
+                                ${majorityLabel}
+                            </div>
+                        </div>
+                    `;
+                    keysContainer.appendChild(card);
+                });
+            },
+
+            showAlert(title, message) {
+                document.getElementById('alert-title').innerText = title;
+                document.getElementById('alert-msg').innerText = message;
+                document.getElementById('modal-alert').classList.remove('hidden');
+            },
+
+            closeAlert() {
+                document.getElementById('modal-alert').classList.add('hidden');
+            }
+        };
+
+        window.onload = () => Game.init();
+    </script>
+</body>
+</html>
